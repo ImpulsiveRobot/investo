@@ -125,14 +125,17 @@
             <label>Expected Annual Rate of Return (%):
                 <input type="number" step="0.01" id="rate_of_return" required>
             </label>
-            <label>Monthly Withdrawal ($):
+            <label>Annual Expenses ($):
                 <input type="text" id="monthly_withdrawal" required>
             </label>
-            <label>Annual % Increase in Withdrawals:
+            <label>Annual % Increase in Expenses (%):
                 <input type="number" step="0.01" id="annual_increase" required>
             </label>
             <label>Withdrawal Start Year:
                 <input type="number" min="1" id="withdrawal_start_year" required>
+            </label>
+            <label>Fixed Annual Income ($):
+                <input type="text" id="fixed_annual_income" required>
             </label>
             <label>Investment Duration (years):
                 <input type="number" id="years" required>
@@ -152,7 +155,7 @@
         }
     }
     document.addEventListener("DOMContentLoaded", function() {
-        ["initial_investment", "monthly_withdrawal"].forEach(function(id) {
+        ["initial_investment", "monthly_withdrawal", "fixed_annual_income"].forEach(function(id) {
             let el = document.getElementById(id);
             if (el) {
                 el.addEventListener("input", function() { formatNumberInput(el); });
@@ -171,32 +174,26 @@
             const annual_increase = parseNum("annual_increase") / 100;
             const years = parseInt(document.getElementById("years").value) || 0;
             const withdrawal_start_year = parseInt(document.getElementById("withdrawal_start_year").value) || 1;
+            const fixed_annual_income = parseNum("fixed_annual_income");
 
             let current_value = initial_investment;
-            let no_withdrawal_value = initial_investment;
             let investment_values = [];
+            let annual_expenses = monthly_withdrawal; // now interpreted as annual expenses
             for (let year = 1; year <= years; year++) {
-                let withdrawal, annual_withdrawal;
-                if (year >= withdrawal_start_year) {
-                    let years_since_start = year - withdrawal_start_year;
-                    withdrawal = monthly_withdrawal * Math.pow(1 + annual_increase, years_since_start);
-                    annual_withdrawal = withdrawal * 12;
-                } else {
-                    withdrawal = 0;
-                    annual_withdrawal = 0;
+                // Grow annual expenses by the annual increase rate
+                if (year > 1) {
+                    annual_expenses = annual_expenses * (1 + annual_increase);
                 }
-                for (let month = 1; month <= 12; month++) {
-                    if (year >= withdrawal_start_year) {
-                        current_value = Math.max(current_value - withdrawal, 0);
-                    }
-                    current_value = current_value * (1 + rate_of_return / 12);
-                    no_withdrawal_value = no_withdrawal_value * (1 + rate_of_return / 12);
-                }
+                let net_withdrawal = annual_expenses - fixed_annual_income;
+                // Subtract net withdrawal at the start of the year
+                current_value = Math.max(current_value - net_withdrawal, 0);
+                // Apply annual growth
+                current_value = current_value * (1 + rate_of_return);
                 investment_values.push({
                     year: year,
                     value: Math.round(current_value * 100) / 100,
-                    annual_withdrawal: Math.round(annual_withdrawal * 100) / 100,
-                    no_withdrawal_value: Math.round(no_withdrawal_value * 100) / 100
+                    annual_withdrawal: Math.round(net_withdrawal * 100) / 100,
+                    fixed_annual_income: Math.round(fixed_annual_income * 100) / 100
                 });
             }
 
@@ -208,14 +205,14 @@
                     <th>Year</th>
                     <th>Annual Withdrawal ($)</th>
                     <th>End Balance ($)</th>
-                    <th>No Withdrawals ($)</th>
+                    <th>Fixed Annual Income ($)</th>
                 </tr>`;
                 investment_values.forEach(row => {
                     html += `<tr>
                         <td>${row.year}</td>
                         <td>${row.annual_withdrawal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>${row.value.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                        <td>${row.no_withdrawal_value.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>${row.fixed_annual_income ? row.fixed_annual_income.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ""}</td>
                     </tr>`;
                 });
                 html += `</table>`;
@@ -226,7 +223,7 @@
             const yearsArr = investment_values.map(row => row.year);
             const balances = investment_values.map(row => row.value);
             const withdrawals = investment_values.map(row => row.annual_withdrawal);
-            const noWithdrawals = investment_values.map(row => row.no_withdrawal_value);
+            const fixedIncome = investment_values.map(row => row.fixed_annual_income);
 
             const chartEl = document.getElementById('chart');
             chartEl.style.display = "block";
@@ -255,12 +252,12 @@
                             pointRadius: 3
                         },
                         {
-                            label: 'No Withdrawals',
-                            data: noWithdrawals,
-                            borderColor: '#2ecc40',
-                            backgroundColor: 'rgba(46,204,64,0.08)',
+                            label: 'Fixed Annual Income',
+                            data: fixedIncome,
+                            borderColor: '#ff9800',
+                            backgroundColor: 'rgba(255,152,0,0.08)',
                             fill: false,
-                            borderDash: [6, 6],
+                            borderDash: [2, 6],
                             tension: 0.2,
                             pointRadius: 3
                         }
