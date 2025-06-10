@@ -25,7 +25,7 @@
         }
         .container {
             background: #fff;
-            max-width: 520px;
+            max-width: 900px;
             margin: 32px auto 0 auto;
             border-radius: 16px;
             box-shadow: 0 6px 32px rgba(44, 62, 80, 0.10), 0 1.5px 6px rgba(44, 62, 80, 0.06);
@@ -79,11 +79,13 @@
         table {
             border-collapse: collapse;
             width: 100%;
+            max-width: 100%;
             background: #fff;
             margin-top: 32px;
             box-shadow: 0 2px 8px rgba(44, 62, 80, 0.07);
             border-radius: 10px;
-            overflow: hidden;
+            overflow-x: auto;
+            display: block;
         }
         th, td {
             border: none;
@@ -181,9 +183,13 @@
                     annual_expenses = annual_expenses * (1 + annual_increase);
                 }
                 let net_withdrawal = 0;
+                let income_gap = 0;
                 if (annual_expenses > fixed_annual_income) {
                     net_withdrawal = annual_expenses - fixed_annual_income;
+                    income_gap = net_withdrawal;
                     current_value = Math.max(current_value - net_withdrawal, 0);
+                } else {
+                    income_gap = annual_expenses - fixed_annual_income;
                 }
                 // Apply annual growth
                 current_value = current_value * (1 + rate_of_return);
@@ -191,6 +197,8 @@
                     year: year,
                     value: Math.round(current_value * 100) / 100,
                     annual_withdrawal: Math.round(net_withdrawal * 100) / 100,
+                    annual_expenses: Math.round(annual_expenses * 100) / 100,
+                    income_gap: Math.round(income_gap * 100) / 100,
                     fixed_annual_income: Math.round(fixed_annual_income * 100) / 100
                 });
             }
@@ -202,6 +210,8 @@
                 html += `<table><tr>
                     <th>Year</th>
                     <th>Annual Withdrawal (R)</th>
+                    <th>Annual Expenses (R)</th>
+                    <th>Income Gap (R)</th>
                     <th>End Balance (R)</th>
                     <th>Fixed Annual Income (R)</th>
                 </tr>`;
@@ -209,6 +219,8 @@
                     html += `<tr>
                         <td>${row.year}</td>
                         <td>${row.annual_withdrawal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+                        <td>${row.annual_expenses ? row.annual_expenses.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ""}</td>
+                        <td>${row.income_gap ? row.income_gap.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ""}</td>
                         <td>${row.value.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                         <td>${row.fixed_annual_income ? row.fixed_annual_income.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : ""}</td>
                     </tr>`;
