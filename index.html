@@ -119,19 +119,19 @@
     <h1>Investment Time Value Calculator</h1>
     <div class="container">
         <form id="investment-form" autocomplete="off">
-            <label>Initial Investment ($):
+            <label>Initial Investment (R):
                 <input type="text" id="initial_investment" required>
             </label>
             <label>Expected Annual Rate of Return (%):
                 <input type="number" step="0.01" id="rate_of_return" required>
             </label>
-            <label>Annual Expenses ($):
+            <label>Starting Annual Expenses (R):
                 <input type="text" id="monthly_withdrawal" required>
             </label>
             <label>Annual % Increase in Expenses (%):
                 <input type="number" step="0.01" id="annual_increase" required>
             </label>
-            <label>Fixed Annual Income ($):
+            <label>Fixed Annual Income (R):
                 <input type="text" id="fixed_annual_income" required>
             </label>
             <label>Investment Duration (years):
@@ -201,9 +201,9 @@
                 html += `<h2 style="margin-top:32px;">Investment Value Over Time</h2>`;
                 html += `<table><tr>
                     <th>Year</th>
-                    <th>Annual Withdrawal ($)</th>
-                    <th>End Balance ($)</th>
-                    <th>Fixed Annual Income ($)</th>
+                    <th>Annual Withdrawal (R)</th>
+                    <th>End Balance (R)</th>
+                    <th>Fixed Annual Income (R)</th>
                 </tr>`;
                 investment_values.forEach(row => {
                     html += `<tr>
